@@ -1,9 +1,9 @@
 package com.yeepay;
 
+
 import com.yeepay.util.Excel;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -14,7 +14,9 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) throws IOException {
 
-        Excel excel = new Excel();     /**
+        Excel excel = new Excel();
+        excel.create("4.xlsx");
+        /**
         ArrayList<ArrayList<ArrayList<String>>> file = excel.read("1.xlsx");
         for (ArrayList<ArrayList<String>> lists : file) {
             for (ArrayList<String> list : lists) {
@@ -43,6 +45,7 @@ public class Main {
             }
             System.out.println("-----");
         }
+        excel.create(lists,"3.xlsx");
 
     }
 

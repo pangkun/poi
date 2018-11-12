@@ -1,5 +1,6 @@
 package com.yeepay.util;
 
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -21,17 +22,20 @@ import java.util.List;
  * @author pangkun
  * @date 2018/11/12 下午2:28
  */
-public class Excel {
+public class Excel implements Handle {
     private static XSSFWorkbook xssfWorkbook = null;
 
+    @Override
     public void create(String fileName) throws IOException {
         FileOutputStream out = new FileOutputStream(
                 new File(fileName));
         xssfWorkbook = new XSSFWorkbook();
+        xssfWorkbook.createSheet();
         xssfWorkbook.write(out);
         out.close();
     }
 
+    @Override
     public XSSFWorkbook open(String fileName) throws IOException {
         File file = new File(fileName);
         FileInputStream fIP = new FileInputStream(file);
@@ -42,6 +46,7 @@ public class Excel {
         return xssfWorkbook;
     }
 
+    @Override
     public ArrayList<ArrayList<ArrayList<String>>> read(String fileName) throws IOException {
         xssfWorkbook = open(fileName);
         ArrayList<ArrayList<ArrayList<String>>> all = new ArrayList<ArrayList<ArrayList<String>>>();
@@ -130,35 +135,37 @@ public class Excel {
  fis.close();*/
     }
 
-    private String Trim_str(String str) {
-        if (str == null)
-            return null;
-        return str.replaceAll("[\\s\\?]", "").replace("　", "");
-    }
+    /**
+     * private String Trim_str(String str) {
+     * if (str == null)
+     * return null;
+     * return str.replaceAll("[\\s\\?]", "").replace("　", "");
+     * }
+     */
 
 
     private String calCell(Cell cell) {
         if (cell == null)
             return null;
-        switch (cell.getCellTypeEnum()) {
-            case STRING:
+        switch (cell.getCellType()) {
+            case Cell.CELL_TYPE_STRING:
                 return cell.getStringCellValue();
-            case NUMERIC:
+            case Cell.CELL_TYPE_NUMERIC:
                 return String.valueOf(cell.getNumericCellValue());
-            case BOOLEAN:
+            case Cell.CELL_TYPE_BOOLEAN:
                 return String.valueOf(cell.getBooleanCellValue());
-            case BLANK:
+            case Cell.CELL_TYPE_BLANK:
                 return "";
-            case _NONE:
-                return null;
-            case FORMULA:
-                // 公式
+            case Cell.CELL_TYPE_FORMULA:
                 return String.valueOf(cell.getCellFormula());
+            case Cell.CELL_TYPE_ERROR:
+                return null;
+            default:
+                return null;
         }
-        return null;
     }
 
-
+    @Override
     public List<List<String[]>> readExcel(String fileName) throws IOException {
         Workbook workbook = open(fileName);
         List<List<String[]>> lists = new ArrayList<List<String[]>>();
@@ -197,13 +204,39 @@ public class Excel {
                 }
                 lists.add(list);
             }
-            workbook.close();
+//            workbook.close();
         }
         return lists;
     }
 
     public void change() {
 
+    }
+
+    @Override
+    public void create(List<List<String[]>> lists, String fileName) throws IOException {
+        xssfWorkbook = new XSSFWorkbook();
+        for (int i = 0; i < lists.size(); i++) {
+            Sheet sheet = xssfWorkbook.createSheet();
+            List<String[]> strings = lists.get(i);
+            if (strings == null) {
+                continue;
+            }
+            for (int j = 0; j < strings.size(); j++) {
+                Row row = sheet.createRow(j);
+                if (strings.get(j) == null) {
+                    continue;
+                }
+                for (int k = 0; k < strings.get(j).length; k++) {
+                    Cell cell = row.createCell(k);
+                    cell.setCellValue(strings.get(j)[k]);
+                }
+            }
+        }
+        Workbook workbook = xssfWorkbook;
+        FileOutputStream fileOutputStream = new FileOutputStream(fileName);
+        workbook.write(fileOutputStream);
+        fileOutputStream.close();
     }
 
 
